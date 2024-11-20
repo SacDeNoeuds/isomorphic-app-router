@@ -15,23 +15,29 @@ import { createBrowserHistory } from 'history'
 export const history = createBrowserHistory() // or Memory, or…
 
 // <repo>/library/router.ts
-import { RouterFactory } from 'browser-router'
-import { PathToRegexpAdapter } from 'browser-router/adapter/PathToRegexp'
+import { RouterFactory } from 'single-page-app-router'
+import { PathToRegexpAdapter } from 'single-page-app-router/adapter/PathToRegexp'
 import { match } from 'path-to-regexp'
 import { history } from '<repo>/history'
 
-export const Router = RouterFactory<RouteShape>({
+export const Router = RouterFactory({
   adapter: PathToRegexpAdapter(match),
   getPathname: () => history.location.pathname,
   onHistoryChange: history.listen,
   // Optional: you can provide a global route equality check
   isSameRoute: (a, b) => isDeepEqual(a, b),
 })
+```
 
+### Enforcing a route shape
+
+```ts
 // Optional: You can force a general route shape.
 // This is useful to force a stable discriminant.
 // Let’s our discriminant is "name"
 type RouteShape = { name: string }
+
+export const Router = RouterFactory<RouteShape>(…)
 ```
 
 ## Recipes
