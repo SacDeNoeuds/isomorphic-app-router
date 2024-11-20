@@ -1,9 +1,9 @@
-# Browser-Router
+# single-page-app-router
 
 ## Installation
 
 ```bash
-npm i -S browser-router
+npm i -S single-page-app-router
 ```
 
 You can use it with any history solution, the most common being [history](https://npmjs.com/package/history) I’ll showcase this one.
@@ -16,24 +16,22 @@ export const history = createBrowserHistory() // or Memory, or…
 
 // <repo>/library/router.ts
 import { RouterFactory } from 'browser-router'
-import { URLPatternAdapter } from 'browser-router/adapter/URLPattern'
 import { PathToRegexpAdapter } from 'browser-router/adapter/PathToRegexp'
 import { match } from 'path-to-regexp'
 import { history } from '<repo>/history'
 
-// Optional: You can force a general route shape.
-// This is useful to force a stable discriminant.
-// Let’s our discriminant is "name"
-type RouteShape = { name: string }
 export const Router = RouterFactory<RouteShape>({
   adapter: PathToRegexpAdapter(match),
-  // requires urlpattern-polyfill for non-chromium browsers!
-  adapter: URLPatternAdapter,
   getPathname: () => history.location.pathname,
   onHistoryChange: history.listen,
   // Optional: you can provide a global route equality check
   isSameRoute: (a, b) => isDeepEqual(a, b),
 })
+
+// Optional: You can force a general route shape.
+// This is useful to force a stable discriminant.
+// Let’s our discriminant is "name"
+type RouteShape = { name: string }
 ```
 
 ## Recipes
@@ -48,12 +46,12 @@ type YourRoute =
   | { name: 'Product', id: number }
   | { name: 'NotFound', matchPathname?: string }
 
-const router = Router<YourRoute>({ NotFound: () => ({ name: 'NotFound' }) })({
+const router = Router<YourRoute>({
+  NotFound: () => ({ name: 'NotFound' })
+})({
   '/': () => ({ name: 'Home' }),
-  // "{/*}?" indicates to also match sub-paths like /product/1/hello/world
-  // See syntax possibilities at https://github.com/pillarjs/path-to-regexp
   '/product/:id{/*}?': ({ params, pathname }) => {
-    pathname // "/product/:id"
+    pathname // "/product/:id{/*}"
     const id = Number(params.id)
     // For whatever reason, you can return `undefined`
     // it will resolve to "not found"
@@ -80,19 +78,15 @@ type YourRoute =
 
 const basePath = '/:locale'
 
-const router = Router<YourRoute>({ NotFound: () => ({ name: 'NotFound' }) })({
+const router = Router<YourRoute>({
+  NotFound: () => ({ name: 'NotFound' }),
+})({
   basePath,
   routes: {
-    // "{/}?" allows to resolve both "/fr" and "/fr/"
     '{/}?': ({ params }) => ({ name: 'Home' }),
-    // "{/*}?" indicates to also match sub-paths like /product/1/hello/world
-    // See syntax possibilities at https://github.com/pillarjs/path-to-regexp
     '/product/:id{/*}?': ({ params, pathname }) => {
-      pathname // "/product/:id"
+      pathname // "/:locale/product/:id{/*}?"
       const id = Number(params.id)
-      // For whatever reason, you can return `undefined`
-      // it will resolve to "not found"
-      // In our case, if the product id is not a number, let’s return `undefined`
       return Number.isNaN(id) ? undefined : { name: 'Product', id }
     },
   }
@@ -102,6 +96,38 @@ const router = Router<YourRoute>({ NotFound: () => ({ name: 'NotFound' }) })({
 router.route // YourRoute
 router.onRouteChanged((newRoute, oldRoute) => {})
 router.destroy() // remove all `onRouteChanged` listeners.
+```
+
+## Framework integrations
+
+### React Hook
+
+```ts
+const useRouter = (router: Router) => {
+	const [route, setRoute] = useState(router.route)
+	useEffect(() => {
+		const unsubscribe = router.onRouteChanged((newRoute) => {
+			setRoute(newRoute)
+		})
+		return unsubscribe
+	}, [router])
+	return route
+}
+```
+
+### Svelte
+
+```ts
+import { readable } from 'svelte'
+
+const RouterToSvelteStore = (router: Router) => {
+	return readable(router.route, (set) => {
+		const unsubscribe = router.onRouteChanged((newRoute) => {
+			set(newRoute)
+		})
+		return unsubscribe
+	})
+}
 ```
 
 ## Reference
@@ -125,17 +151,20 @@ export interface Router<Route extends object> {
 What is injected in the route callback.
 
 ```ts
-export interface RouteData<Path extends string, BasePath extends string> {
-  params: Simplify<PathParameters<`${BasePath}${Path}`>>
+export interface RouteData<BasePath extends string, Path extends string> {
+  params: PathParameters<`${BasePath}${Path}`>
   pathname: string
 }
 
 const router = Router<MyRoute>(…)({
   basePath: '/:locale',
   routes: {
-    '{/}?': (data: RouteData<'/:locale{/}?'>) => {
-      data // { params: { locale: string }, pathname: '{/}?' }
-    }
+    '{/}?': (data: RouteData<'/:locale', '{/}?'>) => {
+      data // { params: { locale: string }, pathname: '/:locale{/}?' }
+    },
+    '/product/:id': (data: RouteData<'/:locale', '/product/:id'>) => {
+      data // { params: { locale: string, id: string }, pathname: '/:locale/product/:id' }
+    },
   }
 })
 ```
@@ -168,7 +197,7 @@ All in pure JS, testable with no framework, adaptable to every framework.
 
 Testable: No jsdom needed, no {your framework}-library, no nothing. Aim at that 3ms test 😉.
 
-Fully type-safe and type-driven for mad-typers.
+Fully type-safe and type-driven for mad-typers. It comes with a double-function cost, but still worth it!
 
 Now you have the treat of typed path parameters :stuck_out_tongue:
 
