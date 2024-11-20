@@ -1,0 +1,11 @@
+import { RouterAdapter } from '../router'
+
+export const URLPatternAdapter: RouterAdapter = {
+  match: (pathname, currentPath) => {
+    // @ts-ignore
+    const pattern = new URLPattern({ pathname })
+    const data = pattern.exec(currentPath, 'http://t.t')
+    const params = data?.pathname?.groups
+    return params ? { params, pathname } : undefined
+  }
+}
