@@ -1,7 +1,6 @@
 export { PathToRegexpResolver } from './resolver/PathToRegexp'
 export { URLPatternResolver } from './resolver/URLPattern'
 export type {
-  OnHistoryChange,
   Router,
   RouterListener
 } from "./Router"

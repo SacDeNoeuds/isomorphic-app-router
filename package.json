@@ -23,6 +23,8 @@
     }
   },
   "scripts": {
+    "prebuild": "npm run check-ts && rm -rf ./lib",
+    "check-ts": "tsc --noEmit",
     "build": "rollup -c ./rollup.config.js",
     "prepack": "npm run build",
     "test": "vitest"

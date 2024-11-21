@@ -1,4 +1,4 @@
-# single-page-app-router
+# isomorphic-app-router
 
 Super tiny (1.56kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
@@ -128,12 +128,12 @@ export const RouterBuilder = RouterBuilderFactory<RouteShape>({
 [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) is a great native API that still hasn’t reached baseline at the time writing, therefore you’ll need to use polyfill.
 
 ```bash
-npm i -S single-page-app-router history urlpattern-polyfill
+npm i -S isomorphic-app-router history urlpattern-polyfill
 ```
 
 ```ts
 // <repo>/library/router.ts
-import { RouterBuilderFactory, URLPatternResolver } from 'single-page-app-router'
+import { RouterBuilderFactory, URLPatternResolver } from 'isomorphic-app-router'
 import { createBrowserHistory } from 'history'
 import "urlpattern-polyfill"
 
@@ -150,12 +150,12 @@ export const RouterBuilder = RouterBuilderFactory({
 [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) is a great tool, `URLPattern` syntax is actually _based_ on path-to-regexp. It is more lightweight than `urlpattern-polyfill` but is no web standard.
 
 ```bash
-npm i -S single-page-app-router history path-to-regexp
+npm i -S isomorphic-app-router history path-to-regexp
 ```
 
 ```ts
 // <repo>/library/router.ts
-import { RouterBuilderFactory, PathToRegexpResolver } from 'single-page-app-router'
+import { RouterBuilderFactory, PathToRegexpResolver } from 'isomorphic-app-router'
 import { createBrowserHistory } from 'history'
 import { match } from 'path-to-regexp'
 
@@ -180,7 +180,7 @@ export const myHistory = {
 }
 
 // <repo>/library/router.ts
-import { RouterBuilderFactory, YourResolver } from 'single-page-app-router'
+import { RouterBuilderFactory, YourResolver } from 'isomorphic-app-router'
 import { myHistory } from '<repo>/library/history'
 
 export const RouterBuilder = RouterBuilderFactory({

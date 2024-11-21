@@ -2,7 +2,6 @@ import { LinkTo } from './LinkFactory'
 import { ResolveRoute } from "./Resolver"
 import { SingleEventTarget, Unsubscribe } from "./SingleEventTarget"
 
-
 export interface Router<Route, PathByName extends Record<string, string>> {
   /**
    * The current active route
