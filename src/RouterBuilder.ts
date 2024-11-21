@@ -5,7 +5,7 @@ import { Simplify } from "./types"
 
 export interface RouteData<Path extends string> {
   params: Simplify<PathParameters<Path>>
-  pathname: string
+  pathname: Path
 }
 
 export interface RouterBuilder<
@@ -16,8 +16,8 @@ export interface RouterBuilder<
   withBasePath: <BasePath extends string>(
     basePath: BasePath,
   ) => RouterBuilder<Route, BasePath, PathByName>
-  isSame: (
-    isSame: (a: Route, b: Route) => boolean,
+  compareWith: (
+    compare: (a: Route, b: Route) => boolean,
   ) => Omit<RouterBuilder<Route, BasePath, PathByName>, "withBasePath">
   set: <Name extends string, Path extends string>(
     name: Exclude<Name, keyof PathByName>,
@@ -36,7 +36,7 @@ export interface RouterBuilder<
 
 export interface RouterBuilderFactoryDeps<RouteShape> {
   history: HistoryForRouter
-  isSameRoute?: (a: RouteShape, b: RouteShape) => boolean
+  compare?: (a: RouteShape, b: RouteShape) => boolean
   resolver: RouteResolver
 }
 
@@ -55,14 +55,14 @@ export function RouterBuilderFactory<RouteShape = any>(
       pathsByName: {} as Record<string, string>,
       routes: new Map<string, (data: RouteData<any>) => Route>(),
       isSameRoute:
-        deps.isSameRoute ?? ((() => false) as (a: Route, b: Route) => boolean),
+        deps.compare ?? ((() => false) as (a: Route, b: Route) => boolean),
     }
     const builder: RouterBuilder<Route, string, {}> = {
       withBasePath: (basePath) => {
         collected.basePath = basePath
         return builder as any
       },
-      isSame: (isSameRoute) => {
+      compareWith: (isSameRoute) => {
         collected.isSameRoute = isSameRoute
         return builder as any
       },
@@ -80,7 +80,7 @@ export function RouterBuilderFactory<RouteShape = any>(
             collected.routes,
             fallback,
           ),
-          isSameRoute: collected.isSameRoute ?? deps.isSameRoute,
+          compare: collected.isSameRoute ?? deps.compare,
         })
       },
     }

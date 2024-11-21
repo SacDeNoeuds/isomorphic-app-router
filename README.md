@@ -1,6 +1,8 @@
 # single-page-app-router
 
-Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff. Because it is framework-agnostic, it can be adapted to _every_ framework.
+Super tiny (1.58kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
+
+Because it is framework-agnostic, it can be adapted to _every_ framework.
 
 ## Recipes
 
@@ -14,12 +16,11 @@ type YourRoute =
   | { name: 'Product' }
   | null // for not found. You could also provide { name: 'NotFound' }
 
-const router = RouterBuilder<YourRoute>()
-  // let you be guided by the types ;)
+const router = RouterBuilder<YourRoute>() // let you be guided by the types ;)
   .set('home', '/', () => ({ name: 'Home' }))
   .set('product', '/product/:id', ({ params }) => {
-    params // { id: string } <- parameters are inferred from the path.
-    const id = Number(params.id)
+    const id = Number(params.id) // params: { id: string } <- parameters are inferred from the path.
+
     return Number.isNaN(id)
       ? null // for not found
       : { name: 'Product', id }
@@ -30,7 +31,7 @@ router.route // YourRoute, the active route
 router.onChange((nextRoute, previousRoute) => {})
 
 router.linkTo.home() // parameter-less path, no arg required
-router.linkTo.product({ id: '2' })
+router.linkTo.product({ id: '2' }) // TS forcefully asks for the route parameters
 ```
 
 ### Nested Routes
@@ -48,6 +49,9 @@ const router = RouterBuilder<YourRoute>()
     params // { locale: string, id: string } <- basePath _and_ path parameters get inferred
   })
   .orNotFound(…)
+
+router.linkTo.home({ locale: 'fr' }) // base path parameters are also prompted
+router.linkTo.product({ locale: 'fr', id: '2' })
 ```
 
 ### Path Syntax
@@ -62,6 +66,19 @@ The [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) webs
 - Regex groups like `/books/(\\d+)` can be used but break intellisense of path parameters
 - For nested routers, type the home as `{/}?` :wink:
 
+### Providing a router-level route comparator
+
+It overrides **completely** a potential global route comparator.
+
+```ts
+type YourRoute = { name: 'Home' } | { name: 'Product' }
+
+const router = RouterBuilder<YourRoute>()
+  .withBasePath('…') // optional
+  .compareWith((a, b) => a.name === b.name)
+  // (a: YourRoute, b: YourRoute) => boolean
+```
+
 ### Overriding the history for one router
 
 ```ts
@@ -70,6 +87,37 @@ import { createMemoryHistory } from 'history'
 const historyForMyTabs = createMemoryHistory()
 const router = RouterBuilder<SomeRoute>(historyForMyTabs) // <- tada
 ```
+
+### Enforcing route shapes
+
+You can force a general route shape. This is useful to force a stable discriminant. Let’s say our discriminant is "name":
+
+```ts
+type RouteShape = { name: string }
+
+// See installation steps for more details on `RouterBuilderFactory`
+
+export const RouterBuilder = RouterBuilderFactory<RouteShape>({…})
+  // (a: YourRoute, b: YourRoute) => boolean
+```
+
+### Providing a global route comparator
+
+This allows you to provide a generic equality function, like `_.isEqual` or some hash-equality function.
+
+```ts
+type RouteShape = { name: string, id?: unknown }
+
+// See installation steps for more details on `RouterBuilderFactory`
+
+export const RouterBuilder = RouterBuilderFactory<RouteShape>({
+  // (a: RouteShape, b: RouteShape) => boolean
+  compare: (a, b) => a.name === b.name && a?.id === b?.id,
+  compare: _.isEqual,
+  compare: hashEqual,
+})
+```
+
 
 ## Convinced? Let’s install
 
@@ -152,36 +200,6 @@ export const RouterBuilder = RouterBuilderFactory({
 })
 ```
 
-### Enforcing a route shape
-
-You can force a general route shape. This is useful to force a stable discriminant. Let’s say our discriminant is "name":
-
-```ts
-type RouteShape = { name: string }
-
-export const RouterBuilder = RouterBuilderFactory<RouteShape>(…)
-
-type MyRoute = { type: 'home' } | …
-const router = RouterBuilder<Route>() // fails!
-```
-
-### Providing a default route equality check
-
-This allows you to provide a generic equality function, like `_.isEqual` or some hash-equality function.
-
-```ts
-// <repo>/library/router.ts
-export const RouterBuilder = RouterBuilderFactory({
-  // …
-  isSameRoute: (a, b): boolean => {
-    // some logic
-  },
-  isSameRoute: _.isEqual,
-  isSameRoute: hashEqual,
-  // …
-})
-```
-
 ## Framework integrations
 
 ### React Hook
@@ -190,7 +208,7 @@ export const RouterBuilder = RouterBuilderFactory({
 const useRouter = <R extends Route<any, any>>(router: R) => {
 	const [route, setRoute] = useState(router.route)
 	useEffect(() => {
-		const unsubscribe = router.onChanged((newRoute) => {
+		const unsubscribe = router.onChange((newRoute) => {
 			setRoute(newRoute)
 		})
 		return unsubscribe
@@ -206,7 +224,7 @@ import { readable } from 'svelte'
 
 const RouterToSvelteStore = <R extends Router<any, any>>(router: R) => {
 	return readable(router.route, (set) => {
-		const unsubscribe = router.onChanged((newRoute) => {
+		const unsubscribe = router.onChange((newRoute) => {
 			set(newRoute)
 		})
 		return unsubscribe
@@ -238,9 +256,9 @@ export interface Router<Route, PathByName extends Record<string, string>> {
    * according to an optionally provided `isSameRoute`.
    * @example
    * const router = RouterBuilder<Route>().set('home', '/', () => {…})
-   * router.onChanged((newRoute, previousRoute) => {…})
+   * router.onChange((newRoute, previousRoute) => {…})
    */
-  onChanged: (
+  onChange: (
     listener: (newRoute: Route, previousRoute: Route) => unknown,
   ) => Unsubscribe // () => void
   /**
@@ -260,12 +278,12 @@ export interface Router<Route, PathByName extends Record<string, string>> {
 
 ### `RouteData<Path>`
 
-What is injected in the route callback.
+What is injected in the route handler.
 
 ```ts
 export interface RouteData<BasePath extends string, Path extends string> {
   params: PathParameters<`${BasePath}${Path}`>
-  pathname: string
+  pathname: `${BasePath}${Path}`
 }
 
 const router = RouterBuilder<MyRoute>()
@@ -276,6 +294,42 @@ const router = RouterBuilder<MyRoute>()
   .set('product', '/product/:id': (data: RouteData<'/:locale/product/:id'>) => {
     data // { params: { locale: string, id: string }, pathname: '/:locale/product/:id' }
   })
+  .orNotFound(() => ({ name: 'NotFound' }))
+```
+
+### `RouteBuilder`
+
+Implementation of the builder pattern to output a `Router`.
+
+```ts
+export interface RouterBuilder<
+  Route,
+  BasePath extends string,
+  PathByName extends Record<string, string>,
+> {
+  withBasePath: <BasePath extends string>(
+    basePath: BasePath,
+  ) => RouterBuilder<Route, BasePath, PathByName>
+
+  compareWith: (
+    compare: (a: Route, b: Route) => boolean,
+  ) => Omit<RouterBuilder<Route, BasePath, PathByName>, "withBasePath">
+
+  set: <Name extends string, Path extends string>(
+    name: Exclude<Name, keyof PathByName>,
+    path: Path,
+    handler: (data: RouteData<`${BasePath}${Path}`>) => Route,
+  ) => Omit<
+    RouterBuilder<
+      Route,
+      BasePath,
+      PathByName & { [Key in Name]: `${BasePath}${Path}` }
+    >,
+    "withBasePath" | "isSame"
+  >
+
+  orNotFound: (handler: () => Route) => Router<Route, PathByName>
+}
 ```
 
 ## Why yet-another X ?

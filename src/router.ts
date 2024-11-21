@@ -24,7 +24,7 @@ export interface Router<Route, PathByName extends Record<string, string>> {
    * const router = RouterBuilder<Route>().set('home', '/', () => {…})
    * router.onChanged((newRoute, previousRoute) => {…})
    */
-  readonly onChanged: (
+  readonly onChange: (
     listener: (newRoute: Route, previousRoute: Route) => unknown,
   ) => Unsubscribe
   /**
@@ -57,20 +57,20 @@ export type RouterListener<Route> = (
 type CreateRouterOptions<Route, PathByName extends Record<string, string>> = {
   resolve: ResolveRoute<Route>
   history: HistoryForRouter
-  isSameRoute?: (a: Route, b: Route) => boolean
+  compare?: (a: Route, b: Route) => boolean
   pathByName: PathByName
 }
 export function createRouter<Route, PathByName extends Record<string, string>>(
   deps: CreateRouterOptions<Route, PathByName>,
 ) {
   let route = deps.resolve(deps.history.location.pathname)
-  const isSameRoute = deps.isSameRoute ?? (() => false)
+  const isSame = deps.compare ?? (() => false)
   const target = SingleEventTarget<RouterListener<Route>>()
 
   const unsubscribeFromHistory = deps.history.listen(() => {
     const previousRoute = router.route
     const newRoute = deps.resolve(deps.history.location.pathname)
-    if (isSameRoute(previousRoute, newRoute)) return
+    if (isSame(previousRoute, newRoute)) return
     route = newRoute
 
     target.dispatch(newRoute, previousRoute)
@@ -81,7 +81,7 @@ export function createRouter<Route, PathByName extends Record<string, string>>(
       return route
     },
     linkTo: makeLinkTo(),
-    onChanged: target.subscribe,
+    onChange: target.subscribe,
     destroy: () => {
       unsubscribeFromHistory()
       target.destroy()

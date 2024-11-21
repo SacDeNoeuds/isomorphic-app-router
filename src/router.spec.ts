@@ -14,7 +14,7 @@ function factory(resolver: RouteResolver) {
     const RouterBuilder = RouterBuilderFactory<RouteShape>({
       resolver,
       history,
-      isSameRoute: (a, b) => a.name === b.name,
+      compare: (a, b) => a.name === b.name,
     })
     return [RouterBuilder, history] as const
   }
@@ -106,7 +106,7 @@ describe("isSameRoute", () => {
 
     const Router = () => {
       return RouterBuilder<Route | null>()
-        .isSame(isSameRoute)
+        .compareWith(isSameRoute)
         .set('home', "/", () => ({ name: "Home" }))
         .set('product', "/product/:id", ({ params }) => ({
           name: "Product",
@@ -121,7 +121,7 @@ describe("isSameRoute", () => {
         const router = Router()
         const changes = new Set<Route>() // keeps the references !
         
-        router.onChanged((newRoute) => changes.add(newRoute))
+        router.onChange((newRoute) => changes.add(newRoute))
         history.push(newPath)
         expect(changes.size).toBe(1)
         history.push(newPath)
@@ -132,7 +132,7 @@ describe("isSameRoute", () => {
     it("resolves to a new product page when parameter changes", () => {
       const router = Router()
       const changes = new Set<Route>()
-      router.onChanged((newRoute) => changes.add(newRoute))
+      router.onChange((newRoute) => changes.add(newRoute))
       history.push("/product/1")
       expect(changes.size).toBe(1)
       history.push("/product/2")
@@ -146,7 +146,7 @@ describe("isSameRoute", () => {
     const RouterBuilder = RouterBuilderFactory<RouteShape>({
       history,
       resolver: PathToRegexpResolver(match),
-      isSameRoute: (a, b) => a?.name === b?.name && a?.id === b?.id,
+      compare: (a, b) => a?.name === b?.name && a?.id === b?.id,
     })
     const Router = () => {
       return RouterBuilder<Route>()
@@ -164,7 +164,7 @@ describe("isSameRoute", () => {
         const router = Router()
         const changes = new Set<Route>() // keeps the references !
 
-        router.onChanged((newRoute) => changes.add(newRoute))
+        router.onChange((newRoute) => changes.add(newRoute))
         history.push(newPath)
         expect(changes.size).toBe(1)
         history.push(newPath)
@@ -175,7 +175,7 @@ describe("isSameRoute", () => {
     it("resolves to a new product page when parameter changes", () => {
       const router = Router()
       const changes = new Set<Route>()
-      router.onChanged((newRoute) => changes.add(newRoute))
+      router.onChange((newRoute) => changes.add(newRoute))
       history.push("/product/1")
       expect(changes.size).toBe(1)
       history.push("/product/2")
