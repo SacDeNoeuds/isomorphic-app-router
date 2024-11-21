@@ -1,56 +1,75 @@
-import { match } from 'path-to-regexp'
+import { match } from "path-to-regexp"
 import "urlpattern-polyfill"
-import { describe, expect, it } from 'vitest'
-import { PathToRegexpAdapter } from './adapter/PathToRegexp'
-import { URLPatternAdapter } from './adapter/URLPattern'
-import { mockHistory } from './history-mock'
-import { RouterAdapter, RouterFactory } from './router'
+import { describe, expect, it } from "vitest"
+import { mockHistory } from "./history-mock"
+import { RouteResolver } from "./Resolver"
+import { PathToRegexpResolver } from "./resolver/PathToRegexp"
+import { URLPatternResolver } from "./resolver/URLPattern"
+import { RouterBuilderFactory } from "./RouterBuilder"
 
-function factory(adapter: RouterAdapter) {
+function factory(resolver: RouteResolver) {
   return function bootAt(path: string) {
     const history = mockHistory(path)
     type RouteShape = { name: string }
-    const Router = RouterFactory<RouteShape>({
-      adapter,
-      getPathname: () => history.url.pathname,
-      onHistoryChange: history.listen,
+    const RouterBuilder = RouterBuilderFactory<RouteShape>({
+      resolver,
+      history,
       isSameRoute: (a, b) => a.name === b.name,
     })
-    return [Router, history] as const
+    return [RouterBuilder, history] as const
   }
 }
 
-describe.each<[string, RouterAdapter]>([
-  ['URLPattern', URLPatternAdapter],
-  ['PathToRegexp', PathToRegexpAdapter(match)],
-])('Router with %s adapter', (_, adapter) => {
+describe.each<[string, RouteResolver]>([
+  ["URLPattern", URLPatternResolver],
+  ["PathToRegexp", PathToRegexpResolver(match)],
+])("Router with %s adapter", (_, adapter) => {
   describe.each<[string, string]>([
-    ['top-level', ''],
-    ['nested', '/test/:toto'],
-  ])('%s router', (_, basePath) => {
+    ["top-level", ""],
+    ["nested", "/test/:toto"],
+  ])("%s router", (_, basePath) => {
     const bootAt = factory(adapter)
     type Route =
-    | { name: 'Home' }
-    | { name: 'Product', id: number }
-    | { name: 'NotFound' }
-    
+      | { name: "Home" }
+      | { name: "Product"; id: number }
+      | { name: "NotFound" }
+
     function makeRouter(initialPath: string) {
-      const [Router, history] = bootAt(initialPath)
-      const router = Router<Route>({ basePath, NotFound: () => ({ name: 'NotFound' }) })({
-        '/': () => ({ name: 'Home' }),
-        '/product/:id': ({ params }) => {
+      const [RouterBuilder, history] = bootAt(initialPath)
+      const router = RouterBuilder<Route>()
+        .withBasePath(basePath)
+        .set('home', "/", () => ({ name: "Home" }))
+        .set('product', "/product/:id", ({ params }) => {
           const id = Number(params.id)
-          return Number.isNaN(id) ? undefined : { name: 'Product', id };
-        },
-      })
+          return Number.isNaN(id)
+            ? { name: "NotFound" }
+            : { name: "Product", id }
+        })
+        .orNotFound(() => ({ name: "NotFound" }))
       return [router, history] as const
     }
 
-    describe.each<{ path: string, whenNavigatingFrom: string, route: Route }>([
-      { path: `${basePath}/`, whenNavigatingFrom: '/unknown', route: { name: 'Home' } },
-      { path: `${basePath}/product/1`, whenNavigatingFrom: '/', route: { name: 'Product', id: 1 } },
-      { path: `${basePath}/product/abc`, whenNavigatingFrom: '/unknown', route: { name: 'NotFound' } },
-      { path: `${basePath}/unknown`, whenNavigatingFrom: '/', route: { name: 'NotFound' } },
+    describe.each<{ path: string; whenNavigatingFrom: string; route: Route }>([
+      {
+        path: `${basePath}/`,
+        whenNavigatingFrom: "/unknown",
+        route: { name: "Home" },
+      },
+      {
+        path: `${basePath}/product/1`,
+        whenNavigatingFrom: "/",
+        route: { name: "Product", id: 1 },
+      },
+      {
+        path: `${basePath}/product/abc`,
+        whenNavigatingFrom: "/unknown",
+        route: { name: "NotFound" },
+      },
+      {
+        path: `${basePath}/unknown`,
+        whenNavigatingFrom: "/",
+        route: { name: "NotFound" },
+      },
     ])("$route.name", (config) => {
       it(`resolves ${config.path} to route ${config.route.name}`, () => {
         const [router] = makeRouter(config.path)
@@ -62,6 +81,105 @@ describe.each<[string, RouterAdapter]>([
         history.push(config.path)
         expect(router.route).toEqual(config.route)
       })
+    })
+  })
+})
+
+describe("isSameRoute", () => {
+  type Route = { name: "Home" } | { name: "Product"; id: number } | null
+  const history = mockHistory("/test")
+
+  describe("at builder level", () => {
+    const RouterBuilder = RouterBuilderFactory({
+      history,
+      resolver: PathToRegexpResolver(match),
+    })
+
+    const isSameRoute = (a: Route, b: Route) => {
+      switch (a?.name) {
+        case "Product":
+          return b?.name === a.name && a.id === b.id
+        default:
+          return a?.name === b?.name
+      }
+    }
+
+    const Router = () => {
+      return RouterBuilder<Route | null>()
+        .isSame(isSameRoute)
+        .set('home', "/", () => ({ name: "Home" }))
+        .set('product', "/product/:id", ({ params }) => ({
+          name: "Product",
+          id: Number(params.id),
+        }))
+        .orNotFound(() => null)
+    }
+
+    it.each<string>(["/product/2", "/"])(
+      "resolves the '%s' page once",
+      (newPath) => {
+        const router = Router()
+        const changes = new Set<Route>() // keeps the references !
+        
+        router.onChanged((newRoute) => changes.add(newRoute))
+        history.push(newPath)
+        expect(changes.size).toBe(1)
+        history.push(newPath)
+        expect(changes.size).toBe(1)
+      },
+    )
+
+    it("resolves to a new product page when parameter changes", () => {
+      const router = Router()
+      const changes = new Set<Route>()
+      router.onChanged((newRoute) => changes.add(newRoute))
+      history.push("/product/1")
+      expect(changes.size).toBe(1)
+      history.push("/product/2")
+      expect(changes.size).toBe(2)
+    })
+  })
+
+  describe("at factory level", () => {
+    type RouteShape = { name: string; id?: unknown } | null
+    const history = mockHistory("/test")
+    const RouterBuilder = RouterBuilderFactory<RouteShape>({
+      history,
+      resolver: PathToRegexpResolver(match),
+      isSameRoute: (a, b) => a?.name === b?.name && a?.id === b?.id,
+    })
+    const Router = () => {
+      return RouterBuilder<Route>()
+        .set('home', "/", () => ({ name: "Home" }))
+        .set('product', "/product/:id", ({ params }) => ({
+          name: "Product",
+          id: Number(params.id),
+        }))
+        .orNotFound(() => null)
+    }
+
+    it.each<string>(["/product/2", "/"])(
+      "resolves the '%s' page once",
+      (newPath) => {
+        const router = Router()
+        const changes = new Set<Route>() // keeps the references !
+
+        router.onChanged((newRoute) => changes.add(newRoute))
+        history.push(newPath)
+        expect(changes.size).toBe(1)
+        history.push(newPath)
+        expect(changes.size).toBe(1)
+      },
+    )
+
+    it("resolves to a new product page when parameter changes", () => {
+      const router = Router()
+      const changes = new Set<Route>()
+      router.onChanged((newRoute) => changes.add(newRoute))
+      history.push("/product/1")
+      expect(changes.size).toBe(1)
+      history.push("/product/2")
+      expect(changes.size).toBe(2)
     })
   })
 })

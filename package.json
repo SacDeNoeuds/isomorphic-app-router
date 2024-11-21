@@ -2,7 +2,8 @@
   "name": "single-page-app-router",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/cjs/main.js",
+  "module": "lib/esm/main.js",
   "type": "module",
   "files": ["./lib", "./README.md"],
   "types": "./lib/esm/main.d.ts",
@@ -10,21 +11,13 @@
     ".": {
       "import": "./lib/esm/main.js",
       "require": "./lib/cjs/main.js",
+      "node": "./lib/cjs/main.js",
       "types": "./lib/esm/main.d.ts"
-    },
-    "adapter/PathToRegexp": {
-      "import": "./lib/esm/PathToRegexp.js",
-      "require": "./lib/cjs/PathToRegexp.js",
-      "types": "./lib/esm/PathToRegexp.d.ts"
-    },
-    "adapter/URLPattern": {
-      "import": "./lib/esm/URLPattern.js",
-      "require": "./lib/cjs/URLPattern.js",
-      "types": "./lib/esm/URLPattern.d.ts"
     }
   },
   "scripts": {
     "build": "rollup -c ./rollup.config.js",
+    "prepack": "npm run build",
     "test": "vitest"
   },
   "author": "",

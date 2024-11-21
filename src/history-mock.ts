@@ -1,9 +1,9 @@
-import { Unsubscribe } from './router'
+import { Unsubscribe } from './SingleEventTarget'
 
 type HistoryListener = (nextUrl: URL) => void
 
 export interface HistoryMock {
-  url: URL
+  location: URL
   push: (url: URL | string) => void
   listen: (listener: HistoryListener) => Unsubscribe
 }
@@ -11,10 +11,10 @@ export function mockHistory(initialPath: string): HistoryMock {
   const listeners = new Set<HistoryListener>()
   const dispatch = (url: URL) => listeners.forEach((listener) => listener(url))
   const history: HistoryMock = {
-    url: new URL(initialPath, 'https://example.com'),
+    location: new URL(initialPath, 'https://example.com'),
     push: (urlOrString) => {
-      history.url = new URL(urlOrString, 'https://example.com')
-      dispatch(history.url)
+      history.location = new URL(urlOrString, 'https://example.com')
+      dispatch(history.location)
     },
     listen: (listener) => {
       listeners.add(listener)

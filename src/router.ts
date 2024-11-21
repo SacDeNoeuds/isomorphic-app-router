@@ -1,104 +1,100 @@
-import { PathParameters } from './path-parameters'
-import { Simplify } from './types'
+import { LinkTo } from './LinkFactory'
+import { ResolveRoute } from "./Resolver"
+import { SingleEventTarget, Unsubscribe } from "./SingleEventTarget"
 
-export type Unsubscribe = () => void
-export type OnHistoryChange = (listener: () => unknown) => Unsubscribe
 
-export type RouterListener<Route> = (newRoute: Route, previousRoute: Route) => unknown
-
-export interface RouterAdapter {
-  match: (pathname: string, currentPath: string) => RouteData<string, string> | undefined
-}
-
-export interface Router<Route extends object> {
-  route: Route
-  onRouteChanged: (
+export interface Router<Route, PathByName extends Record<string, string>> {
+  /**
+   * The current active route
+   */
+  readonly route: Route
+  /**
+   * A helper to build links based on the provided path patterns and route name
+   * @example
+   * const router = RouterBuilder().set('home', '/', () => {…}).
+   * router.linkTo // { home: () => string }
+   */
+  readonly linkTo: {
+    readonly [Name in keyof PathByName]: LinkTo<PathByName[Name]>
+  },
+  /**
+   * Gets triggered when the active route changed and is different than the previous one
+   * according to an optionally provided `isSameRoute`.
+   * @example
+   * const router = RouterBuilder<Route>().set('home', '/', () => {…})
+   * router.onChanged((newRoute, previousRoute) => {…})
+   */
+  readonly onChanged: (
     listener: (newRoute: Route, previousRoute: Route) => unknown,
   ) => Unsubscribe
-  destroy: () => void
+  /**
+   * Removes all listeners, notably to history.
+   * Particularly useful for nested routers.
+   * @example
+   * const router = RouterBuilder<Route>().set('home', '/', () => {…})
+   * 
+   * const cleanup = () => {
+   *   // …
+   *   router.destroy()
+   * }
+   */
+  readonly destroy: () => void
 }
 
-export interface RouteData<Path extends string, BasePath extends string> {
-  params: Simplify<PathParameters<`${BasePath}${Path}`>>
-  pathname: string
+/**
+ * Pick just what’s needed from the history.History type.
+ */
+export interface HistoryForRouter {
+  readonly location: { readonly pathname: string }
+  readonly listen: (listener: () => unknown) => (() => void)
 }
 
-export interface RouterFactoryOptions<RouteShape extends object> {
-  getPathname: () => string
-  onHistoryChange: OnHistoryChange
-  adapter: RouterAdapter
-  isSameRoute?: (a: RouteShape, b: RouteShape) => boolean
-}
+export type RouterListener<Route> = (
+  newRoute: Route,
+  previousRoute: Route,
+) => unknown
 
-export interface CreateRouterOptions<Route, BasePath extends string = string> {
-  NotFound: (data: RouteData<string, BasePath>) => Route
+type CreateRouterOptions<Route, PathByName extends Record<string, string>> = {
+  resolve: ResolveRoute<Route>
+  history: HistoryForRouter
   isSameRoute?: (a: Route, b: Route) => boolean
+  pathByName: PathByName
 }
-
-export type RouterRoutes<
-  Route,
-  BasePath extends string,
-  RoutePaths extends string,
-> = {
-  [Path in RoutePaths]: (data: RouteData<Path, BasePath>) => Route | undefined
-}
-
-export function RouterFactory<RouteShape extends object>({
-  getPathname,
-  onHistoryChange,
-  isSameRoute: globalIsSameRoute = () => false,
-  adapter,
-}: RouterFactoryOptions<RouteShape>) {
-  return function createRouter<Route extends RouteShape>({
-    NotFound,
-    isSameRoute = globalIsSameRoute,
-  }: CreateRouterOptions<Route>) {
-    return function createRouterRoutes<
-      RoutePaths extends string,
-      BasePath extends string,
-    >({ basePath, routes }: { basePath?: BasePath, routes: RouterRoutes<Route, BasePath, RoutePaths> }): Router<Route> {
-      const resolve = Resolver(adapter, basePath ?? '', routes as any, NotFound)
-      const listeners = new Set<RouterListener<Route>>()
-      const dispatch = (newRoute: Route, previousRoute: Route) => {
-        listeners.forEach((listener) => listener(newRoute, previousRoute))
-      }
-
-      const unsubscribeFromHistory = onHistoryChange(() => {
-        const previousRoute = router.route
-        const newRoute = resolve(getPathname())
-        if (isSameRoute(previousRoute, newRoute)) return
-        router.route = newRoute
-
-        dispatch(newRoute, previousRoute)
-      })
-
-      const router: Router<Route> = {
-        route: resolve(getPathname()),
-        onRouteChanged: (listener) => {
-          listeners.add(listener)
-          return () => listeners.delete(listener)
-        },
-        destroy: () => {
-          unsubscribeFromHistory()
-          listeners.clear()
-        },
-      }
-      return router
-    }
-  }
-}
-
-function Resolver<Route>(
-  adapter: RouterAdapter,
-  basePath: string,
-  routes: Record<string, (data: RouteData<string, string>) => Route | undefined>,
-  fallback: (data: RouteData<string, string>) => Route,
+export function createRouter<Route, PathByName extends Record<string, string>>(
+  deps: CreateRouterOptions<Route, PathByName>,
 ) {
-  return function resolve(currentPath: string): Route {
-    for (const [pathname, make] of Object.entries(routes)) {
-      const data = adapter.match(basePath + pathname, currentPath)
-      if (data) return (make as any)(data) ?? fallback(data)
-    }
-    return fallback({ params: {}, pathname: currentPath })
+  let route = deps.resolve(deps.history.location.pathname)
+  const isSameRoute = deps.isSameRoute ?? (() => false)
+  const target = SingleEventTarget<RouterListener<Route>>()
+
+  const unsubscribeFromHistory = deps.history.listen(() => {
+    const previousRoute = router.route
+    const newRoute = deps.resolve(deps.history.location.pathname)
+    if (isSameRoute(previousRoute, newRoute)) return
+    route = newRoute
+
+    target.dispatch(newRoute, previousRoute)
+  })
+  
+  const router: Router<Route, PathByName> = {
+    get route() {
+      return route
+    },
+    linkTo: makeLinkTo(),
+    onChanged: target.subscribe,
+    destroy: () => {
+      unsubscribeFromHistory()
+      target.destroy()
+    },
+  }
+  return router
+
+  function makeLinkTo() {
+    return Object.assign(
+      {},
+      ...Object.entries(deps.pathByName).map(([routeName, path]) => {
+        return { [routeName]: LinkTo(path) }
+      })
+    )
   }
 }

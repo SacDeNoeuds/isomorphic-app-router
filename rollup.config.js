@@ -1,6 +1,6 @@
 // @ts-check
-import terser from '@rollup/plugin-terser'
 import resolve from '@rollup/plugin-node-resolve'
+import terser from '@rollup/plugin-terser'
 import typescript from "@rollup/plugin-typescript"
 
 const folders = {
@@ -12,8 +12,6 @@ const folders = {
 const config = (format) => ({
   input: {
     main: "src/main.ts",
-    PathToRegexp: "src/adapter/PathToRegexp.ts",
-    URLPattern: "src/adapter/URLPattern.ts",
   },
   output: [
     { dir: folders[format], name: 'main.mjs', format: "esm", sourcemap: true },

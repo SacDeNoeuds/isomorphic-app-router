@@ -1,7 +1,7 @@
 import type { match as matchFromLib } from 'path-to-regexp'
-import { RouterAdapter } from '../router'
+import { RouteResolver } from '../Resolver'
 
-export const PathToRegexpAdapter = (match: typeof matchFromLib): RouterAdapter => ({
+export const PathToRegexpResolver = (match: typeof matchFromLib): RouteResolver => ({
   match: (pathname, currentPath) => {
     const fn = match(pathname)
     const data = fn(currentPath)
