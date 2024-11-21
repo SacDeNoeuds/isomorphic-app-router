@@ -19,10 +19,10 @@ type YourRoute =
 const router = RouterBuilder<YourRoute>() // let you be guided by the types ;)
   .set('home', '/', () => ({ name: 'Home' }))
   .set('product', '/product/:id', ({ params }) => {
-    const id = Number(params.id) // params: { id: string } <- parameters are inferred from the path.
+    const id = Number(params.id) // params: { id: string } <- inferred from the path.
 
     return Number.isNaN(id)
-      ? null // for not found
+      ? null // not found
       : { name: 'Product', id }
   })
   .orNotFound(() => null) // required _at the end_
@@ -43,14 +43,14 @@ type YourRoute = …
 const router = RouterBuilder<YourRoute>()
   .withBasePath('/:locale') // must be provided _first_
   .set('home', '/', ({ params }) => {
-    params // { locale: string } <- basePath parameters also get inferred
+    params // { locale: string } <- basePath params also get inferred
   })
   .set('product', '/product/:id', ({ params }) => {
-    params // { locale: string, id: string } <- basePath _and_ path parameters get inferred
+    params // { locale: string, id: string } <- basePath _and_ path params get inferred
   })
   .orNotFound(…)
 
-router.linkTo.home({ locale: 'fr' }) // base path parameters are also prompted
+router.linkTo.home({ locale: 'fr' }) // basePath params are also required
 router.linkTo.product({ locale: 'fr', id: '2' })
 ```
 
@@ -206,14 +206,14 @@ export const RouterBuilder = RouterBuilderFactory({
 
 ```ts
 const useRouter = <R extends Route<any, any>>(router: R) => {
-	const [route, setRoute] = useState(router.route)
-	useEffect(() => {
-		const unsubscribe = router.onChange((newRoute) => {
-			setRoute(newRoute)
-		})
-		return unsubscribe
-	}, [router])
-	return route
+  const [route, setRoute] = useState(router.route)
+  useEffect(() => {
+    const unsubscribe = router.onChange((newRoute) => {
+      setRoute(newRoute)
+    })
+    return unsubscribe
+  }, [router])
+  return route
 }
 ```
 
@@ -223,14 +223,18 @@ const useRouter = <R extends Route<any, any>>(router: R) => {
 import { readable } from 'svelte'
 
 const RouterToSvelteStore = <R extends Router<any, any>>(router: R) => {
-	return readable(router.route, (set) => {
-		const unsubscribe = router.onChange((newRoute) => {
-			set(newRoute)
-		})
-		return unsubscribe
-	})
+  return readable(router.route, (set) => {
+    const unsubscribe = router.onChange((newRoute) => {
+      set(newRoute)
+    })
+    return unsubscribe
+  })
 }
 ```
+
+### Other framework
+
+I am sure you will find a way to make it work.
 
 ## Reference
 
@@ -347,14 +351,12 @@ You want routing? Fine: provide the history to watch changes, you'll get the act
 
 You want some nested routing? Perfect, provide the history and a base path, you'll get the active route in return.
 
-You want to mix browser, hash and/or memory routing? no problem.
+You want to mix browser, hash and/or memory routing? Fine: provide a different history per-router.
 
-All in pure JS, testable with no framework, adaptable to every framework.
-
+All in pure JS, testable with no framework, adaptable to every framework.<br>
 Testable: No jsdom needed, no {your framework}-library, no nothing. Aim at that 3ms test 😉.
 
-Fully type-safe and type-driven for mad-typers. It comes with a double-function cost, but still worth it!
-
+Fully type-safe and type-driven for mad-typers. It comes with a double-function cost, but still worth it!<br>
 Now you have the treat of typed path parameters :stuck_out_tongue:
 
 ## Contributing
@@ -362,7 +364,7 @@ Now you have the treat of typed path parameters :stuck_out_tongue:
 Any contribution is welcome, fork and PR :grin:
 
 ```sh
-# clone the repo
+# clone the repo, then
 npm ci
 npm run test
 ```
