@@ -1,7 +1,7 @@
 {
   "name": "isomorphic-app-router",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "History-free and dependency-free isomorphic routing library in vanilla JS",
   "keywords": ["vanilla js", "isomorphic", "routing", "type safe"],
   "main": "lib/cjs/main.js",
