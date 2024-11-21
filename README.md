@@ -1,6 +1,6 @@
 # single-page-app-router
 
-Super tiny (1.57kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
+Super tiny (1.56kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
 Because it is framework-agnostic, it can be adapted to _every_ framework.
 
@@ -25,7 +25,7 @@ const router = RouterBuilder<YourRoute>() // let you be guided by the types ;)
       ? null // not found
       : { name: 'Product', id }
   })
-  .orNotFound(() => null) // required _at the end_
+  .or(() => null) // required _at the end_
 
 router.route // YourRoute, the active route
 router.onChange((nextRoute, previousRoute) => {})
@@ -48,7 +48,7 @@ const router = RouterBuilder<YourRoute>()
   .set('product', '/product/:id', ({ params }) => {
     params // { locale: string, id: string } <- basePath _and_ path params get inferred
   })
-  .orNotFound(…)
+  .or(…)
 
 router.linkTo.home({ locale: 'fr' }) // basePath params are also required
 router.linkTo.product({ locale: 'fr', id: '2' })
@@ -298,7 +298,7 @@ const router = RouterBuilder<MyRoute>()
   .set('product', '/product/:id': (data: RouteData<'/:locale/product/:id'>) => {
     data // { params: { locale: string, id: string }, pathname: '/:locale/product/:id' }
   })
-  .orNotFound(() => ({ name: 'NotFound' }))
+  .or(() => ({ name: 'NotFound' }))
 ```
 
 ### `RouteBuilder`
@@ -332,7 +332,7 @@ export interface RouterBuilder<
     "withBasePath" | "isSame"
   >
 
-  orNotFound: (handler: () => Route) => Router<Route, PathByName>
+  or: (handler: () => Route) => Router<Route, PathByName>
 }
 ```
 

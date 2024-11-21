@@ -45,7 +45,7 @@ describe.each<[string, RouteResolver]>([
             ? { name: "NotFound" }
             : { name: "Product", id }
         })
-        .orNotFound(() => ({ name: "NotFound" }))
+        .or(() => ({ name: "NotFound" }))
       return [router, history] as const
     }
 
@@ -112,7 +112,7 @@ describe("isSameRoute", () => {
           name: "Product",
           id: Number(params.id),
         }))
-        .orNotFound(() => null)
+        .or(() => null)
     }
 
     it.each<string>(["/product/2", "/"])(
@@ -155,7 +155,7 @@ describe("isSameRoute", () => {
           name: "Product",
           id: Number(params.id),
         }))
-        .orNotFound(() => null)
+        .or(() => null)
     }
 
     it.each<string>(["/product/2", "/"])(

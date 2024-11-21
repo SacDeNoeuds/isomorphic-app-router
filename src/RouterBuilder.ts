@@ -31,7 +31,7 @@ export interface RouterBuilder<
     >,
     "withBasePath" | "isSame"
   >
-  orNotFound: (handler: () => Route) => Router<Route, PathByName>
+  or: (handler: () => Route) => Router<Route, PathByName>
 }
 
 export interface RouterBuilderFactoryDeps<RouteShape> {
@@ -71,7 +71,7 @@ export function RouterBuilderFactory<RouteShape = any>(
         collected.pathsByName[name] = path
         return builder as any
       },
-      orNotFound: (fallback) => {
+      or: (fallback) => {
         return createRouter<Route, Record<string, string>>({
           pathByName: collected.pathsByName,
           history: history ?? deps.history,
