@@ -1,6 +1,6 @@
 # single-page-app-router
 
-Super tiny (1.58kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
+Super tiny (1.57kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
 Because it is framework-agnostic, it can be adapted to _every_ framework.
 
