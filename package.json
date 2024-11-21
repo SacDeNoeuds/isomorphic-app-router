@@ -1,12 +1,19 @@
 {
-  "name": "single-page-app-router",
+  "name": "@sacdenoeuds/app-router",
+  "private": false,
   "version": "0.1.0",
-  "description": "",
+  "description": "History-free and dependency-free isomorphic routing library in vanilla JS",
+  "keywords": ["vanilla js", "isomorphic", "routing", "type safe"],
   "main": "lib/cjs/main.js",
   "module": "lib/esm/main.js",
   "type": "module",
   "files": ["./lib", "./README.md"],
   "types": "./lib/esm/main.d.ts",
+  "homepage": "https://github.com/SacDeNoeuds/app-router",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SacDeNoeuds/app-router.git"
+  },
   "exports": {
     ".": {
       "import": "./lib/esm/main.js",
@@ -20,8 +27,8 @@
     "prepack": "npm run build",
     "test": "vitest"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
