@@ -18,7 +18,7 @@ export interface Router<Route, PathByName extends Record<string, string>> {
   },
   /**
    * Gets triggered when the active route changed and is different than the previous one
-   * according to an optionally provided `isSameRoute`.
+   * according to an optionally provided `compareWith`.
    * @example
    * const router = RouterBuilder<Route>().set('home', '/', () => {…})
    * router.onChanged((newRoute, previousRoute) => {…})

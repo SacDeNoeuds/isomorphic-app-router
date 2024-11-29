@@ -45,16 +45,14 @@ export function RouterBuilderFactory<RouteShape = any>(
 ) {
   const makeResolveRoute = ResolveWith<any>(deps.resolver)
 
-  return function RouterBuilder<Route extends RouteShape>(history?: HistoryForRouter): RouterBuilder<
-    Route,
-    "",
-    {}
-  > {
+  return function RouterBuilder<Route extends RouteShape>({
+    history,
+  }: { history?: HistoryForRouter } = {}): RouterBuilder<Route, "", {}> {
     const collected = {
       basePath: "",
       pathsByName: {} as Record<string, string>,
       routes: new Map<string, (data: RouteData<any>) => Route>(),
-      isSameRoute:
+      compare:
         deps.compare ?? ((() => false) as (a: Route, b: Route) => boolean),
     }
     const builder: RouterBuilder<Route, string, {}> = {
@@ -62,8 +60,8 @@ export function RouterBuilderFactory<RouteShape = any>(
         collected.basePath = basePath
         return builder as any
       },
-      compareWith: (isSameRoute) => {
-        collected.isSameRoute = isSameRoute
+      compareWith: (compare) => {
+        collected.compare = compare
         return builder as any
       },
       set: (name, path, handler) => {
@@ -80,7 +78,7 @@ export function RouterBuilderFactory<RouteShape = any>(
             collected.routes,
             fallback,
           ),
-          compare: collected.isSameRoute ?? deps.compare,
+          compare: collected.compare ?? deps.compare,
         })
       },
     }
