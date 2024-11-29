@@ -1,6 +1,6 @@
 ![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router)
 
-Super tiny (< 1kB gzipped) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
+Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
 Because it is framework-agnostic, it can be adapted to _every_ framework.
 
