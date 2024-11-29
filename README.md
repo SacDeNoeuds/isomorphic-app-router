@@ -1,34 +1,86 @@
-# isomorphic-app-router
+![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router)
 
-Super tiny (1.56kB) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
+Super tiny (< 1kB gzipped) dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
 Because it is framework-agnostic, it can be adapted to _every_ framework.
 
-## Recipes
+<!-- TOC -->
 
-### Top-Level Routes
+- [Recipes/Usage](#recipesusage)
+  - [Basics](#basics)
+  - [Real-life example](#real-life-example)
+  - [Nested Routes](#nested-routes)
+  - [Providing a router-level route comparator](#providing-a-router-level-route-comparator)
+  - [Overriding the history for one router](#overriding-the-history-for-one-router)
+  - [Enforcing route shapes](#enforcing-route-shapes)
+  - [Providing a global route comparator](#providing-a-global-route-comparator)
+  - [Path Syntax](#path-syntax)
+- [Installation](#installation)
+  - [With history](#with-history)
+    - [With URLPattern resolver](#with-urlpattern-resolver)
+    - [With PathToRegex resolver](#with-pathtoregex-resolver)
+  - [With a custom history](#with-a-custom-history)
+- [Framework integrations](#framework-integrations)
+  - [React Hook](#react-hook)
+  - [Svelte](#svelte)
+  - [Other framework](#other-framework)
+- [API Reference](#api-reference)
+  - [Router](#router)
+  - [RouteData<Path>](#routedatapath)
+  - [RouteBuilder](#routebuilder)
+- [Why yet-another X ?](#why-yet-another-x-)
+- [Contributing](#contributing)
+
+<!-- /TOC -->
+
+## Recipes/Usage
+
+### Basics
 
 ```ts
 import { RouterBuilder } from '<repo>/library/router'
 
-type YourRoute =
-  | { name: 'Home' }
-  | { name: 'Product' }
-  | null // for not found. You could also provide { name: 'NotFound' }
+// `YourRoute` is for you to define, you have full control.
+// You can add `path`, `url`, params, etc.
+// See more real-life example below.
+type YourRoute = {
+  routeName: string
+}
+const router = RouterBuilder<YourRoute>()
+  // optional
+  .withBasePath('/lang/:locale') // can contain parameters
+  .compareWith((a, b) => a.routeName === b.routeName)
+  // define your routes:
+  .set('route1', '/path/to/route', () => ({ routeName: 'route1' }))
+  .set('…', '/path/…', () => {…})
+  // finish building the router:
+  .or(() => ({ routeName: 'not found' }))
 
-const router = RouterBuilder<YourRoute>() // let you be guided by the types ;)
+router.linkTo.route1() // => "/path/to/route"
+router.route           // { routeName: string }
+router.onChange((nextRoute, previousRoute) => {…})
+```
+
+### Real-life example
+
+```ts
+import { RouterBuilder } from '<repo>/library/router'
+
+type Route =
+  | { name: 'Home' }
+  | { name: 'Product', productId: number }
+  | null // for not found
+
+const router = RouterBuilder<Route>()
   .set('home', '/', () => ({ name: 'Home' }))
   .set('product', '/product/:id', ({ params }) => {
-    const id = Number(params.id) // params: { id: string } <- inferred from the path.
+    const productId = Number(params.id)       // params: { id: string }
 
-    return Number.isNaN(id)
-      ? null // not found
-      : { name: 'Product', id }
+    return Number.isNaN(productId)
+      ? null                                  // not found
+      : { name: 'Product', productId }
   })
   .or(() => null) // required _at the end_
-
-router.route // YourRoute, the active route
-router.onChange((nextRoute, previousRoute) => {})
 
 router.linkTo.home() // parameter-less path, no arg required
 router.linkTo.product({ id: '2' }) // TS forcefully asks for the route parameters
@@ -36,17 +88,17 @@ router.linkTo.product({ id: '2' }) // TS forcefully asks for the route parameter
 
 ### Nested Routes
 
-Let’s take the same example as before and add it a base path:
+The same real-life router can be given a base path super easily:
 
 ```ts
 type YourRoute = …
 const router = RouterBuilder<YourRoute>()
-  .withBasePath('/:locale') // must be provided _first_
+  .withBasePath('/lang/:locale') // must be provided _first_
   .set('home', '/', ({ params }) => {
-    params // { locale: string } <- basePath params also get inferred
+    params                  // { locale: string }
   })
   .set('product', '/product/:id', ({ params }) => {
-    params // { locale: string, id: string } <- basePath _and_ path params get inferred
+    params                  // { locale: string, id: string }
   })
   .or(…)
 
@@ -54,27 +106,15 @@ router.linkTo.home({ locale: 'fr' }) // basePath params are also required
 router.linkTo.product({ locale: 'fr', id: '2' })
 ```
 
-### Path Syntax
-
-I based the library on web standards, namely [URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API). Which itself is based its syntax on [path-to-regexp](https://github.com/pillarjs/path-to-regexp). Therefore, their syntax prevails.
-
-The [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) website is an **excellent** place to start. Here are a few tips though:
-
-- `/post/*` will match `/post/`, `/post/1` & `/post/1/2` ; but not `/post` :warning:
-  To match `/post` => `post{/*}?`
-- `/post{/:id}?` matches `/post` & `/post/1`, not `/post/1/2`
-- Regex groups like `/books/(\\d+)` can be used but break intellisense of path parameters
-- For nested routers, type the home as `{/}?` :wink:
-
 ### Providing a router-level route comparator
 
-It overrides **completely** a potential global route comparator.
+It overrides **completely** the (optional) global route comparator.
 
 ```ts
 type YourRoute = { name: 'Home' } | { name: 'Product' }
 
 const router = RouterBuilder<YourRoute>()
-  .withBasePath('…') // optional
+  .withBasePath('/hello/world') // optional
   .compareWith((a, b) => a.name === b.name)
   // (a: YourRoute, b: YourRoute) => boolean
 ```
@@ -85,12 +125,12 @@ const router = RouterBuilder<YourRoute>()
 import { createMemoryHistory } from 'history'
 
 const historyForMyTabs = createMemoryHistory()
-const router = RouterBuilder<SomeRoute>(historyForMyTabs) // <- tada
+const router = RouterBuilder<SomeRoute>({ history historyForMyTabs }) // <- tada
 ```
 
 ### Enforcing route shapes
 
-You can force a general route shape. This is useful to force a stable discriminant. Let’s say our discriminant is "name":
+You can force a global route shape. This is useful to force a stable discriminant. Let’s say our discriminant is "name":
 
 ```ts
 type RouteShape = { name: string }
@@ -98,7 +138,6 @@ type RouteShape = { name: string }
 // See installation steps for more details on `RouterBuilderFactory`
 
 export const RouterBuilder = RouterBuilderFactory<RouteShape>({…})
-  // (a: YourRoute, b: YourRoute) => boolean
 ```
 
 ### Providing a global route comparator
@@ -118,12 +157,24 @@ export const RouterBuilder = RouterBuilderFactory<RouteShape>({
 })
 ```
 
+### Path Syntax
 
-## Convinced? Let’s install
+I based the library on web standards, namely [URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API). Which itself is based its syntax on [path-to-regexp](https://github.com/pillarjs/path-to-regexp). Therefore, their syntax prevails.
+
+The [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) website is an **excellent** place to start. Here are a few tips though:
+
+- `/post/*` will match `/post/`, `/post/1` & `/post/1/2` ; but not `/post` :warning:
+  To match `/post` => `post{/*}?`
+- `/post{/:id}?` matches `/post` & `/post/1`, not `/post/1/2`
+- Regex groups like `/books/(\\d+)` can be used but break intellisense of path parameters
+- For nested routers, type the home as `{/}?` :wink:
+
+
+## Installation
 
 ### With [history](https://npmjs.com/package/history)
 
-### With `URLPattern` resolver
+#### With `URLPattern` resolver
 
 [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) is a great native API that still hasn’t reached baseline at the time writing, therefore you’ll need to use polyfill.
 
@@ -145,7 +196,7 @@ export const RouterBuilder = RouterBuilderFactory({
 })
 ```
 
-### With `PathToRegex` resolver
+#### With `PathToRegex` resolver
 
 [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) is a great tool, `URLPattern` syntax is actually _based_ on path-to-regexp. It is more lightweight than `urlpattern-polyfill` but is no web standard.
 
@@ -236,7 +287,7 @@ const RouterToSvelteStore = <R extends Router<any, any>>(router: R) => {
 
 I am sure you will find a way to make it work.
 
-## Reference
+## API Reference
 
 ### `Router`
 
@@ -344,8 +395,8 @@ Because I never encountered one that made sense to me:
 > Routing and history are separate concerns.
 > 
 > A history can be unique or cascaded across the client-side app, it should not impact routing.
->
-> My opinion: use one history per app.
+
+My opinion: use one history per app.
 
 You want routing? Fine: provide the history to watch changes, you'll get the active route in return.
 
