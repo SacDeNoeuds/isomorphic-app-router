@@ -42,7 +42,7 @@ import { RouterBuilder } from '<repo>/library/router'
 
 // `YourRoute` is for you to define, you have full control.
 // You can add `path`, `url`, params, etc.
-// See more real-life example below.
+// See real-life example below.
 type YourRoute = {
   routeName: string
 }
@@ -50,9 +50,11 @@ const router = RouterBuilder<YourRoute>()
   // optional
   .withBasePath('/lang/:locale') // can contain parameters
   .compareWith((a, b) => a.routeName === b.routeName)
+
   // define your routes:
   .set('route1', '/path/to/route', () => ({ routeName: 'route1' }))
   .set('…', '/path/…', () => {…})
+
   // finish building the router:
   .or(() => ({ routeName: 'not found' }))
 
@@ -69,15 +71,15 @@ import { RouterBuilder } from '<repo>/library/router'
 type Route =
   | { name: 'Home' }
   | { name: 'Product', productId: number }
-  | null // for not found
+  | { name: 'NotFound' }
 
 const router = RouterBuilder<Route>()
   .set('home', '/', () => ({ name: 'Home' }))
   .set('product', '/product/:id', ({ params }) => {
-    const productId = Number(params.id)       // params: { id: string }
+    const productId = Number(params.id) // params: { id: string }
 
     return Number.isNaN(productId)
-      ? null                                  // not found
+      ? { name: 'NotFound' }
       : { name: 'Product', productId }
   })
   .or(() => null) // required _at the end_
@@ -93,13 +95,9 @@ The same real-life router can be given a base path super easily:
 ```ts
 type YourRoute = …
 const router = RouterBuilder<YourRoute>()
-  .withBasePath('/lang/:locale') // must be provided _first_
-  .set('home', '/', ({ params }) => {
-    params                  // { locale: string }
-  })
-  .set('product', '/product/:id', ({ params }) => {
-    params                  // { locale: string, id: string }
-  })
+  .withBasePath('/lang/:locale') // must be the first method called
+  .set('home', '/', ({ params /* { locale: string } */ }) => { … })
+  .set('product', '/product/:id', ({ params /* { locale: string, id: string } */ }) => { … })
   .or(…)
 
 router.linkTo.home({ locale: 'fr' }) // basePath params are also required
@@ -114,9 +112,11 @@ It overrides **completely** the (optional) global route comparator.
 type YourRoute = { name: 'Home' } | { name: 'Product' }
 
 const router = RouterBuilder<YourRoute>()
-  .withBasePath('/hello/world') // optional
   .compareWith((a, b) => a.name === b.name)
   // (a: YourRoute, b: YourRoute) => boolean
+  .set(…)
+  .set(…)
+  .or(…)
 ```
 
 ### Overriding the history for one router
@@ -125,7 +125,7 @@ const router = RouterBuilder<YourRoute>()
 import { createMemoryHistory } from 'history'
 
 const historyForMyTabs = createMemoryHistory()
-const router = RouterBuilder<SomeRoute>({ history historyForMyTabs }) // <- tada
+const router = RouterBuilder<SomeRoute>({ history: historyForMyTabs })
 ```
 
 ### Enforcing route shapes
@@ -133,9 +133,9 @@ const router = RouterBuilder<SomeRoute>({ history historyForMyTabs }) // <- tada
 You can force a global route shape. This is useful to force a stable discriminant. Let’s say our discriminant is "name":
 
 ```ts
-type RouteShape = { name: string }
+import { RouterBuilderFactory } from 'isomorphic-app-router'
 
-// See installation steps for more details on `RouterBuilderFactory`
+type RouteShape = { name: string }
 
 export const RouterBuilder = RouterBuilderFactory<RouteShape>({…})
 ```
@@ -145,9 +145,9 @@ export const RouterBuilder = RouterBuilderFactory<RouteShape>({…})
 This allows you to provide a generic equality function, like `_.isEqual` or some hash-equality function.
 
 ```ts
-type RouteShape = { name: string, id?: unknown }
+import { RouterBuilderFactory } from 'isomorphic-app-router'
 
-// See installation steps for more details on `RouterBuilderFactory`
+type RouteShape = { name: string, id?: unknown }
 
 export const RouterBuilder = RouterBuilderFactory<RouteShape>({
   // (a: RouteShape, b: RouteShape) => boolean
@@ -226,7 +226,7 @@ export const myHistory = {
   pathname: '/',
   addListener: (listener) => {},
   removeListener: (listener) => {},
-  push: (newPath) => {…},
+  push: (newPath) => {},
   // …
 }
 
