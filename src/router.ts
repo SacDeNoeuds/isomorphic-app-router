@@ -25,8 +25,8 @@ export interface Router<Route, PathByName extends Record<string, string>> {
    *  .set('product', '/product/:productId', …)
    *  .or(…)
    *
-   * router.getLinkTo('home') // '/'
-   * router.getLinkTo('product', { productId: '1' }) // '/product/1'
+   * router.makeLinkTo('home') // '/'
+   * router.makeLinkTo('product', { productId: '1' }) // '/product/1'
    */
   readonly makeLinkTo: <Name extends keyof PathByName>(
     name: Name,
