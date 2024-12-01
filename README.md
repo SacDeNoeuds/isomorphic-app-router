@@ -82,7 +82,7 @@ const router = RouterBuilder<Route>()
       ? { name: 'NotFound' }
       : { name: 'Product', productId }
   })
-  .or(() => null) // required _at the end_
+  .or(() => ({ name: 'NotFound' })) // required _at the end_
 
 router.makeLinkTo('home') // parameter-less path, no arg required
 router.makeLinkTo('product', { id: '2' }) // TS forcefully asks for the route parameters
