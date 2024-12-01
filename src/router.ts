@@ -1,4 +1,4 @@
-import { LinkTo } from './LinkFactory'
+import { LinkArgs, LinkTo } from "./LinkFactory"
 import { ResolveRoute } from "./Resolver"
 import { SingleEventTarget, Unsubscribe } from "./SingleEventTarget"
 
@@ -7,15 +7,6 @@ export interface Router<Route, PathByName extends Record<string, string>> {
    * The current active route
    */
   readonly route: Route
-  /**
-   * A helper to build links based on the provided path patterns and route name
-   * @example
-   * const router = RouterBuilder().set('home', '/', () => {…}).
-   * router.linkTo // { home: () => string }
-   */
-  readonly linkTo: {
-    readonly [Name in keyof PathByName]: LinkTo<PathByName[Name]>
-  },
   /**
    * Gets triggered when the active route changed and is different than the previous one
    * according to an optionally provided `compareWith`.
@@ -27,11 +18,26 @@ export interface Router<Route, PathByName extends Record<string, string>> {
     listener: (newRoute: Route, previousRoute: Route) => unknown,
   ) => Unsubscribe
   /**
+   * A helper to build links based on the provided path patterns and route name
+   * @example
+   * const router = RouterBuilder()
+   *  .set('home', '/', () => {…})
+   *  .set('product', '/product/:productId', …)
+   *  .or(…)
+   *
+   * router.getLinkTo('home') // '/'
+   * router.getLinkTo('product', { productId: '1' }) // '/product/1'
+   */
+  readonly makeLinkTo: <Name extends keyof PathByName>(
+    name: Name,
+    ...args: LinkArgs<PathByName[Name]>
+  ) => string
+  /**
    * Removes all listeners, notably to history.
    * Particularly useful for nested routers.
    * @example
-   * const router = RouterBuilder<Route>().set('home', '/', () => {…})
-   * 
+   * const router = RouterBuilder<Route>().set('home', '/', () => {…}).or(…)
+   *
    * const cleanup = () => {
    *   // …
    *   router.destroy()
@@ -45,7 +51,7 @@ export interface Router<Route, PathByName extends Record<string, string>> {
  */
 export interface HistoryForRouter {
   readonly location: { readonly pathname: string }
-  readonly listen: (listener: () => unknown) => (() => void)
+  readonly listen: (listener: () => unknown) => () => void
 }
 
 export type RouterListener<Route> = (
@@ -63,23 +69,23 @@ export function createRouter<Route, PathByName extends Record<string, string>>(
   deps: CreateRouterOptions<Route, PathByName>,
 ) {
   let route = deps.resolve(deps.history.location.pathname)
-  const isSame = deps.compare ?? (() => false)
+  const compare = deps.compare ?? (() => false)
   const target = SingleEventTarget<RouterListener<Route>>()
 
   const unsubscribeFromHistory = deps.history.listen(() => {
     const previousRoute = router.route
     const newRoute = deps.resolve(deps.history.location.pathname)
-    if (isSame(previousRoute, newRoute)) return
+    if (compare(previousRoute, newRoute)) return
     route = newRoute
 
     target.dispatch(newRoute, previousRoute)
   })
-  
+
   const router: Router<Route, PathByName> = {
     get route() {
       return route
     },
-    linkTo: makeLinkTo(),
+    makeLinkTo: (name, ...args) => LinkTo(deps.pathByName[name])(...args),
     onChange: target.subscribe,
     destroy: () => {
       unsubscribeFromHistory()
@@ -87,13 +93,4 @@ export function createRouter<Route, PathByName extends Record<string, string>>(
     },
   }
   return router
-
-  function makeLinkTo() {
-    return Object.assign(
-      {},
-      ...Object.entries(deps.pathByName).map(([routeName, path]) => {
-        return { [routeName]: LinkTo(path) }
-      })
-    )
-  }
 }

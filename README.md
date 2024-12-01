@@ -58,7 +58,7 @@ const router = RouterBuilder<YourRoute>()
   // finish building the router:
   .or(() => ({ routeName: 'not found' }))
 
-router.linkTo.route1() // => "/path/to/route"
+router.makeLinkTo('route1') // => "/path/to/route"
 router.route           // { routeName: string }
 router.onChange((nextRoute, previousRoute) => {…})
 ```
@@ -84,8 +84,8 @@ const router = RouterBuilder<Route>()
   })
   .or(() => null) // required _at the end_
 
-router.linkTo.home() // parameter-less path, no arg required
-router.linkTo.product({ id: '2' }) // TS forcefully asks for the route parameters
+router.makeLinkTo('home') // parameter-less path, no arg required
+router.makeLinkTo('product', { id: '2' }) // TS forcefully asks for the route parameters
 ```
 
 ### Nested Routes
@@ -100,8 +100,8 @@ const router = RouterBuilder<YourRoute>()
   .set('product', '/product/:id', ({ params /* { locale: string, id: string } */ }) => { … })
   .or(…)
 
-router.linkTo.home({ locale: 'fr' }) // basePath params are also required
-router.linkTo.product({ locale: 'fr', id: '2' })
+router.makeLinkTo('home', { locale: 'fr' }) // basePath params are also required
+router.makeLinkTo('product', { locale: 'fr', id: '2' })
 ```
 
 ### Providing a router-level route comparator
@@ -299,23 +299,24 @@ export interface Router<Route, PathByName extends Record<string, string>> {
    * The current active route
    */
   route: Route
-  /**
-   * A helper to build links based on the provided path patterns and route name
-   * @example
-   * const router = RouterBuilder().set('home', '/', () => {…}).
-   * router.linkTo // { home: () => string }
-   */
-  linkTo: { [Name in keyof PathByName]: LinkTo<PathByName[Name]> },
-  /**
-   * Gets triggered when the active route changed and is different than the previous one
-   * according to an optionally provided `isSameRoute`.
-   * @example
-   * const router = RouterBuilder<Route>().set('home', '/', () => {…})
-   * router.onChange((newRoute, previousRoute) => {…})
-   */
   onChange: (
     listener: (newRoute: Route, previousRoute: Route) => unknown,
   ) => Unsubscribe // () => void
+  /**
+   * A helper to build links based on the provided path patterns and route name
+   * @example
+   * const router = RouterBuilder()
+   *  .set('home', '/', () => {…})
+   *  .set('product', '/product/:productId', …)
+   *  .or(…)
+   *
+   * router.getLinkTo('home') // '/'
+   * router.getLinkTo('product', { productId: '1' }) // '/product/1'
+   */
+  makeLinkTo: <Name extends keyof PathByName>(
+    name: Name,
+    ...args: LinkArgs<PathByName[Name]>
+  ) => string
   /**
    * Removes all listeners, notably to history.
    * Particularly useful for nested routers.

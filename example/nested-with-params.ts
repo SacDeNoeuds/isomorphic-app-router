@@ -32,9 +32,11 @@ const router = RouterBuilder<YourRoute>()
       ? { name: 'NotFound', matchPathname: pathname }
       : { name: 'Product', id }
   })
-  .orNotFound(() => ({ name: 'NotFound' }))
+  .or(() => ({ name: 'NotFound' }))
 
 
 router.route // YourRoute
 router.onChange((newRoute, oldRoute) => {})
-router.destroy() // remove all `onRouteChanged` listeners.
+router.destroy() // remove all `onChange` listeners.
+
+router.makeLinkTo('home', { locale: 'fr' })

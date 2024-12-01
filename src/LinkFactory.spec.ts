@@ -23,7 +23,6 @@ describe("LinkFactory", () => {
   })
 
   describe('with weird paths', () => {
-    const paths = ['{/}?', '/overview{/}?', '/product/:id{/*}?'] as const
     const linkTo = {
       home: LinkTo("{/}?"),
       overview: LinkTo('/overview{/}?'),

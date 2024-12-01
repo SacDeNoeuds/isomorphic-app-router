@@ -3,6 +3,7 @@ import { If } from "./types"
 
 type IsEmpty<T> = {} extends T ? true : false
 type Args<Params> = If<IsEmpty<Params>, [], [params: Params]>
+export type LinkArgs<Path extends string> = Args<PathParameters<Path>>
 
 export type LinkTo<Path extends string> = (...args: Args<PathParameters<Path>>) => string
 
