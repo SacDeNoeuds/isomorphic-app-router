@@ -14,8 +14,7 @@ const config = (format) => ({
     main: "src/main.ts",
   },
   output: [
-    { dir: folders[format], name: 'main.mjs', format: "esm", sourcemap: false },
-    { dir: folders[format], name: 'main.cjs', format: "cjs", sourcemap: false },
+    { dir: folders[format], name: 'main.js', format, sourcemap: false },
   ],
   plugins: [
     resolve(),
