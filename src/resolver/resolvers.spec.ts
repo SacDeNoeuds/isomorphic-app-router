@@ -1,7 +1,7 @@
 import { match } from 'path-to-regexp'
 import "urlpattern-polyfill"
 import { describe, expect, it } from 'vitest'
-import { RouteResolver } from '../Resolver'
+import type { RouteResolver } from '../Resolver'
 import { PathToRegexpResolver } from './PathToRegexp'
 import { URLPatternResolver } from './URLPattern'
 

@@ -1,7 +1,7 @@
-import { PathParameters } from "./path-parameters"
-import { ResolveWith, RouteResolver } from "./Resolver"
-import { createRouter, HistoryForRouter, Router } from "./Router"
-import { Simplify } from "./types"
+import type { PathParameters } from "./path-parameters"
+import { ResolveWith, type RouteResolver } from "./Resolver"
+import { createRouter, type HistoryForRouter, type Router } from "./Router"
+import type { Simplify } from "./types"
 
 export interface RouteData<Path extends string> {
   params: Simplify<PathParameters<Path>>

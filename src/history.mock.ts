@@ -1,4 +1,4 @@
-import { Unsubscribe } from './SingleEventTarget'
+import type { Unsubscribe } from './SingleEventTarget'
 
 type HistoryListener = (nextUrl: URL) => void
 

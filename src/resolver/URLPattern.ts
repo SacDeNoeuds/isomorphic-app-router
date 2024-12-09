@@ -1,4 +1,4 @@
-import { RouteResolver } from "../Resolver"
+import type { RouteResolver } from "../Resolver"
 
 export const URLPatternResolver: RouteResolver = {
   match: (pathname, currentPath) => {

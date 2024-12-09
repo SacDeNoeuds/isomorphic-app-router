@@ -1,5 +1,5 @@
 import type { match as matchFromLib } from 'path-to-regexp'
-import { RouteResolver } from '../Resolver'
+import type { RouteResolver } from '../Resolver'
 
 export const PathToRegexpResolver = (match: typeof matchFromLib): RouteResolver => ({
   match: (pathname, currentPath) => {

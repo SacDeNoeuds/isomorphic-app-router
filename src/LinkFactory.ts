@@ -1,5 +1,5 @@
-import { PathParameters } from "./path-parameters"
-import { If } from "./types"
+import type { PathParameters } from "./path-parameters"
+import type { If } from "./types"
 
 type IsEmpty<T> = {} extends T ? true : false
 type Args<Params> = If<IsEmpty<Params>, [], [params: Params]>

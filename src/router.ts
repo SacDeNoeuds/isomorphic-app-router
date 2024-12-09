@@ -1,6 +1,6 @@
-import { LinkArgs, getLinkTo } from "./LinkFactory"
-import { ResolveRoute } from "./Resolver"
-import { SingleEventTarget, Unsubscribe } from "./SingleEventTarget"
+import { type LinkArgs, getLinkTo } from "./LinkFactory"
+import type { ResolveRoute } from "./Resolver"
+import { SingleEventTarget, type Unsubscribe } from "./SingleEventTarget"
 
 export interface Router<Route, PathByName extends Record<string, string>> {
   /**

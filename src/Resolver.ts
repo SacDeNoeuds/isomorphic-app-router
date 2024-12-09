@@ -1,4 +1,4 @@
-import { RouteData } from "./RouterBuilder"
+import type { RouteData } from "./RouterBuilder"
 
 export interface RouteResolver {
   match: (
