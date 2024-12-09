@@ -2,7 +2,7 @@ const isGithubActions = process.env.GITHUB_ACTIONS === 'true'
 
 /** @type {Partial<import('typedoc').TypeDocOptions>} */
 const config = {
-  basePath: isGithubActions ? './unhoax' : './docs',
+  basePath: isGithubActions ? './isomorphic-app-router' : './docs',
   entryPoints: ['./src/main.ts'],
   plugin: ['typedoc-unhoax-theme'],
   out: 'docs',
