@@ -3,7 +3,7 @@ export { URLPatternResolver } from './resolver/URLPattern'
 export type {
   Router,
   RouterListener
-} from "./router-2"
+} from "./Router"
 export {
   RouterBuilderFactory,
   type RouteData,
