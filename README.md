@@ -91,7 +91,7 @@ router.makeLinkTo('product', { id: '2' }) // TS forcefully asks for the route pa
 
 ### Path Syntax
 
-I based the library on web standards, namely [URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API). Which itself is based its syntax on [path-to-regexp](https://github.com/pillarjs/path-to-regexp). Therefore, their syntax prevails.
+I based the library on web standards, namely [URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API). Which itself based its syntax on [path-to-regexp](https://github.com/pillarjs/path-to-regexp). Therefore, their syntax prevails.
 
 The [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) website is an **excellent** place to start. Here are a few tips though:
 
@@ -99,7 +99,7 @@ The [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API) webs
   To match `/post` => `post{/*}?`
 - `/post{/:id}?` matches `/post` & `/post/1`, not `/post/1/2`
 - Regex groups like `/books/(\\d+)` can be used but break intellisense of path parameters
-- For nested routers, type the home as `{/}?` :wink:
+- For nested routers, type the home as `{/}?` 😉
 
 ### Recipes / Advanced Usage
 
@@ -131,7 +131,7 @@ All in pure JS, testable with no framework, adaptable to every framework.<br>
 Testable: No jsdom needed, no {your framework}-library, no nothing. Aim at that 3ms test 😉.
 
 Fully type-safe and type-driven for mad-typers. It comes with a double-function cost, but still worth it!<br>
-Now you have the treat of typed path parameters :stuck_out_tongue:
+Now you have the treat of typed path parameters 😛
 
 ## Contributing
 
