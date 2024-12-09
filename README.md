@@ -1,6 +1,3 @@
-
-
-
 <div align="center">
 
 ![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router) ![Total coverage](./badges/coverage-total.svg)
@@ -49,8 +46,6 @@ export const RouterBuilder = RouterBuilderFactory({
   resolver: URLPatternResolver,
 })
 ```
-
-For custom history, see [this guide]().
 
 <details>
 <summary>The other built-in resolver is <code>path-to-regexp</code>.</summary>
