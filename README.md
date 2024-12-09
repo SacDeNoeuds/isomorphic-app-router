@@ -1,4 +1,4 @@
-![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router)
+![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router) ![Total coverage](./badges/coverage-total.svg)
 
 Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
 
