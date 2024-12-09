@@ -34,6 +34,7 @@
     "prebuild": "npm run check-ts && rm -rf ./lib",
     "check-ts": "tsc --noEmit",
     "build": "rollup -c ./rollup.config.js",
+    "docs": "typedoc",
     "prepack": "npm run build",
     "test": "vitest",
     "coverage": "vitest --coverage"
@@ -51,6 +52,8 @@
     "path-to-regexp": "^8.2.0",
     "rollup": "^4.27.3",
     "tslib": "^2.8.1",
+    "typedoc": "^0.27.4",
+    "typedoc-unhoax-theme": "^0.4.2",
     "typescript": "^5.6.3",
     "urlpattern-polyfill": "^10.0.0",
     "vitest": "^2.1.5"
