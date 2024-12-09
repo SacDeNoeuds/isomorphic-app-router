@@ -1,4 +1,4 @@
-import { LinkArgs, LinkTo } from "./LinkFactory"
+import { LinkArgs, getLinkTo } from "./LinkFactory"
 import { ResolveRoute } from "./Resolver"
 import { SingleEventTarget, Unsubscribe } from "./SingleEventTarget"
 
@@ -85,7 +85,7 @@ export function createRouter<Route, PathByName extends Record<string, string>>(
     get route() {
       return route
     },
-    makeLinkTo: (name, ...args) => LinkTo(deps.pathByName[name])(...args),
+    makeLinkTo: (name, ...args) => getLinkTo(deps.pathByName[name], ...args),
     onChange: target.subscribe,
     destroy: () => {
       unsubscribeFromHistory()

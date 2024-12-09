@@ -3,11 +3,19 @@
   "private": false,
   "version": "0.7.0",
   "description": "History-free and dependency-free isomorphic routing library in vanilla JS",
-  "keywords": ["vanilla js", "isomorphic", "routing", "type safe"],
+  "keywords": [
+    "vanilla-js",
+    "isomorphic",
+    "routing",
+    "type safe"
+  ],
   "main": "lib/cjs/main.js",
   "module": "lib/esm/main.js",
   "type": "module",
-  "files": ["./lib", "./README.md"],
+  "files": [
+    "./lib",
+    "./README.md"
+  ],
   "types": "./lib/esm/main.d.ts",
   "homepage": "https://github.com/SacDeNoeuds/isomorphic-app-router",
   "repository": {
@@ -27,7 +35,8 @@
     "check-ts": "tsc --noEmit",
     "build": "rollup -c ./rollup.config.js",
     "prepack": "npm run build",
-    "test": "vitest"
+    "test": "vitest",
+    "coverage": "vitest --coverage"
   },
   "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
   "license": "MIT",
@@ -35,7 +44,9 @@
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.1",
+    "@types/node": "^22.10.1",
     "@types/path-to-regexp": "^1.7.0",
+    "@vitest/coverage-v8": "^2.1.5",
     "history": "^5.3.0",
     "path-to-regexp": "^8.2.0",
     "rollup": "^4.27.3",

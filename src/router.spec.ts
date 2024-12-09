@@ -1,7 +1,7 @@
 import { match } from "path-to-regexp"
 import "urlpattern-polyfill"
 import { describe, expect, it } from "vitest"
-import { mockHistory } from "./history-mock"
+import { mockHistory } from "./history.mock"
 import { RouteResolver } from "./Resolver"
 import { PathToRegexpResolver } from "./resolver/PathToRegexp"
 import { URLPatternResolver } from "./resolver/URLPattern"
