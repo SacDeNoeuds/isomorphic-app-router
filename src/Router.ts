@@ -2,6 +2,7 @@ import { type LinkArgs, getLinkTo } from "./LinkFactory"
 import type { ResolveRoute } from "./Resolver"
 import { SingleEventTarget, type Unsubscribe } from "./SingleEventTarget"
 
+/** @category Reference/Router */
 export interface Router<Route, PathByName extends Record<string, string>> {
   /**
    * The current active route
@@ -47,6 +48,7 @@ export interface Router<Route, PathByName extends Record<string, string>> {
 }
 
 /**
+ * @category Reference/Router
  * Pick just what’s needed from the history.History type.
  */
 export interface HistoryForRouter {
@@ -54,17 +56,21 @@ export interface HistoryForRouter {
   readonly listen: (listener: () => unknown) => () => void
 }
 
+/** @category Reference/Router */
 export type RouterListener<Route> = (
   newRoute: Route,
   previousRoute: Route,
 ) => unknown
 
+/** @category Reference/Router */
 type CreateRouterOptions<Route, PathByName extends Record<string, string>> = {
   resolve: ResolveRoute<Route>
   history: HistoryForRouter
   compare?: (a: Route, b: Route) => boolean
   pathByName: PathByName
 }
+
+/** @category Reference/Router */
 export function createRouter<Route, PathByName extends Record<string, string>>(
   deps: CreateRouterOptions<Route, PathByName>,
 ) {

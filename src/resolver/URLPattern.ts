@@ -1,5 +1,6 @@
 import type { RouteResolver } from "../Resolver"
 
+/** @category Reference/Resolver */
 export const URLPatternResolver: RouteResolver = {
   match: (pathname, currentPath) => {
     // @ts-ignore

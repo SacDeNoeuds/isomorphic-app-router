@@ -1,5 +1,6 @@
 import type { RouteData } from "./RouterBuilder"
 
+/** @category Reference/Resolver */
 export interface RouteResolver {
   match: (
     pathname: string,

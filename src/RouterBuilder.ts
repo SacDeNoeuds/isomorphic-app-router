@@ -3,11 +3,13 @@ import { ResolveWith, type RouteResolver } from "./Resolver"
 import { createRouter, type HistoryForRouter, type Router } from "./Router"
 import type { Simplify } from "./types"
 
+/** @category Reference/RouterBuilder */
 export interface RouteData<Path extends string> {
   params: Simplify<PathParameters<Path>>
   pathname: Path
 }
 
+/** @category Reference/RouterBuilder */
 export interface RouterBuilder<
   Route,
   BasePath extends string,
@@ -34,12 +36,14 @@ export interface RouterBuilder<
   or: (handler: () => Route) => Router<Route, PathByName>
 }
 
+/** @category Reference/RouterBuilder */
 export interface RouterBuilderFactoryDeps<RouteShape> {
   history: HistoryForRouter
   compare?: (a: RouteShape, b: RouteShape) => boolean
   resolver: RouteResolver
 }
 
+/** @category Reference/RouterBuilder */
 export function RouterBuilderFactory<RouteShape = any>(
   deps: RouterBuilderFactoryDeps<RouteShape>,
 ) {
