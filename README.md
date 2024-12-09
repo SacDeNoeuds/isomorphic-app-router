@@ -1,10 +1,18 @@
+
+
+
+<div align="center">
+
 ![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router) ![Total coverage](./badges/coverage-total.svg)
 
-Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.
-
+Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.<br>
 Because it is framework-agnostic, it can be adapted to _every_ framework.
 
-For more information, check out the [docs](https://sacdenoeuds.github.io/isomorphic-app-router/).
+[Documentation](https://sacdenoeuds.github.io/isomorphic-app-router/)
+
+</div>
+
+---
 
 <!-- TOC -->
 

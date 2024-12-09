@@ -1,13 +1,12 @@
 {
   "name": "isomorphic-app-router",
-  "private": false,
   "version": "0.7.0",
   "description": "History-free and dependency-free isomorphic routing library in vanilla JS",
   "keywords": [
     "vanilla-js",
     "isomorphic",
     "routing",
-    "type safe"
+    "type-safe"
   ],
   "main": "lib/cjs/main.js",
   "module": "lib/esm/main.js",
@@ -17,7 +16,7 @@
     "./README.md"
   ],
   "types": "./lib/esm/main.d.ts",
-  "homepage": "https://github.com/SacDeNoeuds/isomorphic-app-router",
+  "homepage": "https://sacdenoeuds.github.io/isomorphic-app-router/",
   "repository": {
     "type": "git",
     "url": "https://github.com/SacDeNoeuds/isomorphic-app-router.git"
