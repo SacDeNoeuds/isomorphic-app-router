@@ -34,7 +34,7 @@
     "prebuild": "npm run check-ts && rm -rf ./lib",
     "check-ts": "tsc --noEmit",
     "build": "rollup -c ./rollup.config.js",
-    "docs": "typedoc",
+    "doc": "typedoc",
     "prepack": "npm run build",
     "test": "vitest",
     "coverage": "vitest --coverage"
