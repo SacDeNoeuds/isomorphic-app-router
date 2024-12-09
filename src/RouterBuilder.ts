@@ -1,6 +1,6 @@
 import type { PathParameters } from "./path-parameters"
 import { ResolveWith, type RouteResolver } from "./Resolver"
-import { createRouter, type HistoryForRouter, type Router } from "./Router"
+import { createRouter, type HistoryForRouter, type Router } from "./router-2"
 import type { Simplify } from "./types"
 
 export interface RouteData<Path extends string> {
