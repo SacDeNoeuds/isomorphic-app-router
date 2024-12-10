@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Package Size" src="https://badgen.net/bundlephobia/minzip/isomorphic-app-router">
+  <img alt="Package Size" src="https://deno.bundlejs.com/badge?q=isomorphic-app-router">
   <img alt="Total coverage" src="https://raw.githubusercontent.com/SacDeNoeuds/isomorphic-app-router/refs/heads/main/badges/coverage-total.svg">
   <img alt="Dependency Count" src="https://badgen.net/bundlephobia/dependency-count/isomorphic-app-router">
 </p>
