@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     coverage: {
       ...(isCI && { reporter: ['json-summary'] }),
+      provider: 'istanbul',
       include: ['src'],
       exclude: [
         '**/*.spec.ts',
