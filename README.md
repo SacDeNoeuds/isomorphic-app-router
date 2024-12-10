@@ -1,13 +1,15 @@
-<div align="center">
+<p align="center">
+  <img alt="Package Size" src="https://badgen.net/bundlephobia/minzip/isomorphic-app-router">
+  <img alt="Total coverage" src="https://raw.githubusercontent.com/SacDeNoeuds/isomorphic-app-router/refs/heads/main/badges/coverage-total.svg">
+  <img alt="Dependency Count" src="https://badgen.net/bundlephobia/dependency-count/isomorphic-app-router">
+</p>
 
-![Package Size](https://deno.bundlejs.com/badge?q=isomorphic-app-router) ![Total coverage](./badges/coverage-total.svg)
-
+<p align="center">
 Super tiny dependency-free vanilla JS routing library to represent your routing states in pure JS rather than framework-based stuff.<br>
-Because it is framework-agnostic, it can be adapted to _every_ framework.
-
-[Documentation](https://sacdenoeuds.github.io/isomorphic-app-router/)
-
-</div>
+Because it is framework-agnostic, it can be adapted to <em>every</em> framework.
+<br>
+<a href="https://sacdenoeuds.github.io/isomorphic-app-router/">Full Documentation</a>
+</p>
 
 ---
 
