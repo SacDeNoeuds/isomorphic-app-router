@@ -28,6 +28,9 @@ const config = {
     '*',
   ],
   sort: ['documents-first', 'alphabetical'],
+  navigationLinks: {
+    GitHub: 'https://github.com/SacDeNoeuds/isomorphic-app-router',
+  },
 }
 
 export default config
