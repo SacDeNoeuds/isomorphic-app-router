@@ -1,6 +1,6 @@
 {
   "name": "isomorphic-app-router",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "History-free and dependency-free isomorphic routing library in vanilla JS",
   "keywords": [
     "vanilla-js",
